@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run copy-assets && vite build",
-    "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name embedidraw",
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
     "copy-assets": "cp -r node_modules/@excalidraw/excalidraw/dist/excalidraw-assets public/"
   },
   "dependencies": {
@@ -15,8 +15,9 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.42.1",
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.0",
-    "wrangler": "^3.101.0"
+    "wrangler": "^4.103.0"
   }
 }
