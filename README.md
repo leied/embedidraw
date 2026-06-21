@@ -11,16 +11,17 @@ https://<your-pages-domain>/?file=<raw-url-to-excalidraw-file>
 ```
 
 **Example (GitHub raw URL):**
+
 ```
 https://embedidraw.workers.dev/?file=https://raw.githubusercontent.com/you/repo/main/diagram.excalidraw
 ```
 
 ### Modes
 
-| Mode | Behaviour |
-|------|-----------|
+| Mode                   | Behaviour                                                |
+| ---------------------- | -------------------------------------------------------- |
 | **Interact** (default) | Pan, zoom, and drag unlocked elements. No toolbar shown. |
-| **Edit** | Full Excalidraw editor with toolbar. |
+| **Edit**               | Full Excalidraw editor with toolbar.                     |
 
 Toggle with the **✏ Edit / 👁 View** button (bottom-right), or press **Alt+E**.
 
@@ -49,6 +50,7 @@ Toggle with the **✏ Edit / 👁 View** button (bottom-right), or press **Alt+E
 4. Deploy. Done.
 
 **Or via CLI:**
+
 ```bash
 npm install
 npm run deploy   # builds + deploys via wrangler
