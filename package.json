@@ -10,7 +10,10 @@
     "copy-assets": "cp -r node_modules/@excalidraw/excalidraw/dist/excalidraw-assets public/"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@excalidraw/excalidraw": "^0.17.6",
+    "@mui/material": "^9.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

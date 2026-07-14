@@ -24,28 +24,29 @@
 }
 
 /* ─── Interact mode: strip Excalidraw's toolbar chrome ─── */
+/* NOTE: canvas-wrap's mode class is the bare mode value ("interact"/"edit"),
+   not "interact-mode" — selectors below must match that. */
 
-/* Toolbar (shapes, tools row) */
-.interact-mode .App-toolbar-container,
-.interact-mode .App-toolbar,
-/* Top-left hamburger / menu */
-.interact-mode .App-menu__left,
-/* Top-right actions (theme, export…) */
-.interact-mode .App-menu__right,
+/* Top bar: hamburger menu + shape/tool toolbar */
+.interact .App-menu_top,
+.interact .App-toolbar-container,
+.interact .App-toolbar,
+.interact .App-menu__left,
+.interact .App-menu__right,
 /* Bottom zoom controls */
-.interact-mode .App-menu__bottom,
-.interact-mode footer,
-.interact-mode .footer-center,
+.interact .App-menu__bottom,
+.interact footer,
+.interact .footer-center,
 /* Scroll-back-to-content pill */
-.interact-mode .scroll-back-to-content,
+.interact .scroll-back-to-content,
 /* "Exit zen mode" button that Excalidraw injects */
-.interact-mode .disable-zen-mode,
-.interact-mode .enable-zen-mode,
+.interact .disable-zen-mode,
+.interact .enable-zen-mode,
 /* Island/panel that shows when zen mode is toggled */
-.interact-mode .zen-mode-transition .layer-ui__wrapper__footer-center,
+.interact .zen-mode-transition .layer-ui__wrapper__footer-center,
 /* Selected-element toolbar (floating properties bar) */
-.interact-mode .App-toolbar--mobile,
-.interact-mode .ContextMenu {
+.interact .App-toolbar--mobile,
+.interact .ContextMenu {
   display: none !important;
 }
 
@@ -236,20 +237,4 @@
 
 .status-screen.info {
   gap: 1.25rem;
-}
-
-/* ─── Spinner ─── */
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--md-surface-variant);
-  border-top-color: var(--md-primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }

@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, useRef, Component } from "react";
 import * as ExcalidrawAll from "@excalidraw/excalidraw";
+import MuiLinearProgress from "@mui/material/LinearProgress";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./App.css";
+
+const muiDarkTheme = createTheme({
+  palette: { mode: "dark", primary: { main: "#c9c3ff" } },
+});
 
 // CJS interop: the pre-bundle may expose named exports, a default, or both
 const _pkg = ExcalidrawAll?.default ?? ExcalidrawAll;
@@ -118,10 +124,16 @@ export default function App() {
 
   if (status === "loading")
     return (
-      <StatusScreen>
-        <Spinner />
-        Loading…
-      </StatusScreen>
+      <ThemeProvider theme={muiDarkTheme}>
+        <StatusScreen>
+          <p>Loading diagram…</p>
+          <MuiLinearProgress
+            className="linear-progress"
+            color="primary"
+            sx={{ width: 240, maxWidth: "60vw" }}
+          />
+        </StatusScreen>
+      </ThemeProvider>
     );
 
   if (status === "no-file")
@@ -267,10 +279,6 @@ class ErrorBoundary extends Component {
 
 function StatusScreen({ children, className = "" }) {
   return <div className={`status-screen ${className}`}>{children}</div>;
-}
-
-function Spinner() {
-  return <div className="spinner" aria-hidden="true" />;
 }
 
 function PencilIcon() {
