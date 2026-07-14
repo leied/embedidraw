@@ -12,6 +12,24 @@ const muiDarkTheme = createTheme({
 const _pkg = ExcalidrawAll?.default ?? ExcalidrawAll;
 const Excalidraw = _pkg?.Excalidraw ?? null;
 
+// Font family IDs our pinned Excalidraw version (0.17.6) actually knows how
+// to render: 1=Virgil (served as Excalifont, see fonts/), 2=Helvetica,
+// 3=Cascadia, 4=Assistant. Newer Excalidraw versions added more IDs (5 =
+// Excalifont as its own family, 6+ = Nunito/Comic Shanns/etc) that this
+// version doesn't recognize — getFontFamilyString() silently falls back to
+// a generic system font for anything outside {1,2,3,4}. Remap those to 1
+// so unrecognized-but-intentional fonts still land on our default look
+// instead of an ugly fallback.
+const KNOWN_FONT_FAMILIES = new Set([1, 2, 3, 4]);
+
+function normalizeFontFamilies(elements) {
+  return elements.map((el) =>
+    el.fontFamily != null && !KNOWN_FONT_FAMILIES.has(el.fontFamily)
+      ? { ...el, fontFamily: 1 }
+      : el,
+  );
+}
+
 function useFileParam() {
   const [state, setState] = useState({
     status: "loading",
@@ -72,7 +90,7 @@ function useFileParam() {
           status: "ready",
           url,
           data: {
-            elements: raw.elements,
+            elements: normalizeFontFamilies(raw.elements),
             appState: {
               ...safeAppState,
               viewBackgroundColor:

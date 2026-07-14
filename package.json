@@ -7,7 +7,7 @@
     "build": "npm run copy-assets && vite build",
     "preview": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy",
-    "copy-assets": "cp -r node_modules/@excalidraw/excalidraw/dist/excalidraw-assets public/"
+    "copy-assets": "cp -r node_modules/@excalidraw/excalidraw/dist/excalidraw-assets public/ && cp fonts/Excalifont-Regular.woff2 public/excalidraw-assets/Virgil.woff2"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
