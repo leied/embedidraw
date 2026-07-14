@@ -45,6 +45,11 @@
   display: none !important;
 }
 
+/* Help button ("?" — opens keyboard shortcuts dialog): hidden in all modes */
+.canvas-wrap .help-icon {
+  display: none !important;
+}
+
 /* ─── Material 3 Extended FAB (mode toggle) ─── */
 /* Spec: https://m3.material.io/components/extended-fab/specs */
 .mode-fab {
