@@ -5,8 +5,6 @@ import "./App.css";
 // CJS interop: the pre-bundle may expose named exports, a default, or both
 const _pkg = ExcalidrawAll?.default ?? ExcalidrawAll;
 const Excalidraw = _pkg?.Excalidraw ?? null;
-console.log("[embedidraw] ExcalidrawAll:", ExcalidrawAll);
-console.log("[embedidraw] resolved Excalidraw:", Excalidraw);
 
 function useFileParam() {
   const [state, setState] = useState({
@@ -94,10 +92,20 @@ export default function App() {
 
   const handleAPI = useCallback((api) => {
     excalidrawAPI.current = api;
+    // Default to the hand (pan) tool rather than Excalidraw's selection tool
+    api?.setActiveTool({ type: "hand" });
   }, []);
 
   const toggleMode = useCallback(() => {
-    setMode((m) => (m === "interact" ? "edit" : "interact"));
+    setMode((m) => {
+      const next = m === "interact" ? "edit" : "interact";
+      // Returning to interact mode should always land back on pan, regardless
+      // of whatever tool was active while editing
+      if (next === "interact") {
+        excalidrawAPI.current?.setActiveTool({ type: "hand" });
+      }
+      return next;
+    });
   }, []);
 
   useEffect(() => {
@@ -159,6 +167,7 @@ export default function App() {
           <Excalidraw
             excalidrawAPI={handleAPI}
             initialData={data}
+            theme="dark"
             zenModeEnabled={mode === "interact"}
             viewModeEnabled={false}
             UIOptions={{
@@ -166,35 +175,69 @@ export default function App() {
                 saveToActiveFile: false,
                 loadScene: false,
                 export: false,
-                toggleTheme: null,
+                toggleTheme: false,
               },
               welcomeScreen: false,
             }}
           />
         </div>
 
-        <button
-          className={`mode-btn ${mode}`}
-          onClick={toggleMode}
-          title={
-            mode === "interact"
-              ? "Switch to edit mode (Alt+E)"
-              : "Switch to interact mode (Alt+E)"
-          }
-        >
-          {mode === "interact" ? (
-            <>
-              <PencilIcon /> Edit
-            </>
-          ) : (
-            <>
-              <EyeIcon /> View
-            </>
-          )}
-        </button>
+        <ModeFab mode={mode} onToggle={toggleMode} />
       </div>
     </ErrorBoundary>
   );
+}
+
+// Material Design 3 extended FAB — https://m3.material.io/components/extended-fab/specs
+function ModeFab({ mode, onToggle }) {
+  const handleClick = useCallback(
+    (e) => {
+      spawnRipple(e);
+      onToggle();
+    },
+    [onToggle],
+  );
+
+  return (
+    <button
+      className={`mode-fab ${mode}`}
+      onClick={handleClick}
+      title={
+        mode === "interact"
+          ? "Switch to edit mode (Alt+E)"
+          : "Switch to interact mode (Alt+E)"
+      }
+    >
+      <span className="mode-fab-content">
+        <span className="mode-fab-icon">
+          {mode === "interact" ? <PencilIcon /> : <EyeIcon />}
+        </span>
+        <span className="mode-fab-label">
+          {mode === "interact" ? "Edit" : "View"}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function spawnRipple(e) {
+  const button = e.currentTarget;
+  const rect = button.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 1.6;
+  // Keyboard-triggered clicks report clientX/Y as 0 — center the ripple then
+  const isKeyboard = e.detail === 0;
+  const originX = isKeyboard ? rect.width / 2 : e.clientX - rect.left;
+  const originY = isKeyboard ? rect.height / 2 : e.clientY - rect.top;
+
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${originX - size / 2}px`;
+  ripple.style.top = `${originY - size / 2}px`;
+  button.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove(), {
+    once: true,
+  });
 }
 
 class ErrorBoundary extends Component {
@@ -233,8 +276,8 @@ function Spinner() {
 function PencilIcon() {
   return (
     <svg
-      width="14"
-      height="14"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -251,8 +294,8 @@ function PencilIcon() {
 function EyeIcon() {
   return (
     <svg
-      width="14"
-      height="14"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

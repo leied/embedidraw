@@ -1,3 +1,18 @@
+/* ─── Material 3 dark palette (tonal roles) ─── */
+:root {
+  --md-bg: #121016;
+  --md-surface: #1c1a22;
+  --md-surface-variant: #2b2831;
+  --md-on-surface: #e6e1e9;
+  --md-on-surface-variant: #a9a5ae;
+  --md-primary: #c9c3ff;
+  --md-primary-container: #4a4499;
+  --md-on-primary-container: #e6e0ff;
+  --md-secondary-container: #322f3d;
+  --md-on-secondary-container: #dfd9ea;
+  --md-error: #ffb4ab;
+}
+
 .app-root {
   position: fixed;
   inset: 0;
@@ -34,58 +49,124 @@
   display: none !important;
 }
 
-/* Keep the canvas cursor as default (arrow) in interact mode so it feels
-   like a viewer, not an editor — but still allows element dragging */
-.interact-mode .excalidraw .interactive {
-  cursor: default;
+/* ─── Material 3 Extended FAB (mode toggle) ─── */
+/* Spec: https://m3.material.io/components/extended-fab/specs */
+.mode-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 20px 0 16px;
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  font-family:
+    "Google Sans", Roboto, system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  background-color: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  /* MD3 elevation level 3 (resting) */
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  transition:
+    box-shadow 200ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 200ms cubic-bezier(0.2, 0, 0, 1),
+    transform 100ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* ─── Mode toggle button ─── */
-.mode-btn {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  z-index: 9999;
+.mode-fab.edit {
+  background-color: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+/* State layer: hover/press/focus opacity overlays per MD3 spec */
+.mode-fab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 150ms cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: none;
+}
+
+.mode-fab:hover {
+  /* MD3 elevation level 4 (hover) */
+  box-shadow:
+    0 2px 3px 0 rgba(0, 0, 0, 0.3),
+    0 6px 10px 4px rgba(0, 0, 0, 0.15);
+}
+
+.mode-fab:hover::before {
+  opacity: 0.08;
+}
+
+.mode-fab:focus-visible::before {
+  opacity: 0.12;
+}
+
+.mode-fab:active {
+  transform: scale(0.96);
+}
+
+.mode-fab:active::before {
+  opacity: 0.12;
+}
+
+.mode-fab:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+.mode-fab-content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mode-fab-icon {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.9rem;
-  border-radius: 8px;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  background: #ffffff;
-  color: #333;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: system-ui, sans-serif;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition:
-    background 0.15s,
-    box-shadow 0.15s,
-    transform 0.1s;
-  user-select: none;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
-.mode-btn:hover {
-  background: #f5f5f5;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
-  transform: translateY(-1px);
+.mode-fab-label {
+  white-space: nowrap;
 }
 
-.mode-btn:active {
-  transform: translateY(0);
+/* Ripple */
+.ripple {
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.24;
+  transform: scale(0);
+  animation: ripple-anim 550ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  pointer-events: none;
 }
 
-.mode-btn.edit {
-  background: #6965db;
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 2px 10px rgba(105, 101, 219, 0.45);
-}
-
-.mode-btn.edit:hover {
-  background: #5754c8;
-  box-shadow: 0 4px 16px rgba(105, 101, 219, 0.5);
+@keyframes ripple-anim {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 /* ─── Status / splash screens ─── */
@@ -99,15 +180,15 @@
   gap: 1rem;
   padding: 2rem;
   font-family: system-ui, sans-serif;
-  color: #444;
-  background: #fafafa;
+  color: var(--md-on-surface);
+  background: var(--md-bg);
   text-align: center;
 }
 
 .status-screen h2 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #6965db;
+  color: var(--md-primary);
   margin-bottom: 0.25rem;
 }
 
@@ -115,10 +196,12 @@
   font-size: 0.95rem;
   max-width: 560px;
   line-height: 1.6;
+  color: var(--md-on-surface-variant);
 }
 
 .status-screen code {
-  background: #efefef;
+  background: var(--md-surface-variant);
+  color: var(--md-on-surface);
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
   font-size: 0.85em;
@@ -126,8 +209,9 @@
 
 .status-screen .example {
   display: block;
-  background: #1e1e2e;
-  color: #cdd6f4;
+  background: var(--md-surface);
+  color: var(--md-primary);
+  border: 1px solid var(--md-surface-variant);
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -138,15 +222,16 @@
 
 .status-screen .hint {
   font-size: 0.82rem;
-  color: #888;
+  color: var(--md-on-surface-variant);
 }
 
 .status-screen.error {
-  color: #c0392b;
+  color: var(--md-error);
 }
 
 .status-screen.error p {
   font-weight: 600;
+  color: var(--md-error);
 }
 
 .status-screen.info {
@@ -157,8 +242,8 @@
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e0e0e0;
-  border-top-color: #6965db;
+  border: 3px solid var(--md-surface-variant);
+  border-top-color: var(--md-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
