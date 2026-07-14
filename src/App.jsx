@@ -77,6 +77,16 @@ function useFileParam() {
               ...safeAppState,
               viewBackgroundColor:
                 safeAppState.viewBackgroundColor ?? "#ffffff",
+              // Baked into initialData (rather than set imperatively after
+              // mount) so it's correct on the very first paint — calling
+              // excalidrawAPI.setActiveTool() in the ref callback races with
+              // Excalidraw's own initialData application and loses.
+              activeTool: {
+                type: "hand",
+                customType: null,
+                locked: false,
+                lastActiveTool: null,
+              },
             },
             files: raw.files ?? {},
           },
@@ -98,8 +108,6 @@ export default function App() {
 
   const handleAPI = useCallback((api) => {
     excalidrawAPI.current = api;
-    // Default to the hand (pan) tool rather than Excalidraw's selection tool
-    api?.setActiveTool({ type: "hand" });
   }, []);
 
   const toggleMode = useCallback(() => {
@@ -180,7 +188,10 @@ export default function App() {
             excalidrawAPI={handleAPI}
             initialData={data}
             theme="dark"
-            zenModeEnabled={mode === "interact"}
+            // Not using Excalidraw's built-in zen mode: it slides the zoom
+            // controls off-screen too, which we want to keep visible. The
+            // toolbar/hamburger are hidden explicitly via CSS instead.
+            zenModeEnabled={false}
             viewModeEnabled={false}
             UIOptions={{
               canvasActions: {

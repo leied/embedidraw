@@ -28,22 +28,17 @@
    not "interact-mode" — selectors below must match that. */
 
 /* Top bar: hamburger menu + shape/tool toolbar */
+/* Zoom controls (.App-menu__bottom / .layer-ui__wrapper__footer-left) are
+   intentionally left visible in all modes */
 .interact .App-menu_top,
 .interact .App-toolbar-container,
 .interact .App-toolbar,
 .interact .App-menu__left,
 .interact .App-menu__right,
-/* Bottom zoom controls */
-.interact .App-menu__bottom,
 .interact footer,
 .interact .footer-center,
 /* Scroll-back-to-content pill */
 .interact .scroll-back-to-content,
-/* "Exit zen mode" button that Excalidraw injects */
-.interact .disable-zen-mode,
-.interact .enable-zen-mode,
-/* Island/panel that shows when zen mode is toggled */
-.interact .zen-mode-transition .layer-ui__wrapper__footer-center,
 /* Selected-element toolbar (floating properties bar) */
 .interact .App-toolbar--mobile,
 .interact .ContextMenu {
