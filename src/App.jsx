@@ -163,9 +163,25 @@ export default function App() {
   const [showCredits, setShowCredits] = useState(false);
   const excalidrawAPI = useRef(null);
 
-  const handleAPI = useCallback((api) => {
-    excalidrawAPI.current = api;
+  const centerContent = useCallback((animate = false) => {
+    const api = excalidrawAPI.current;
+    if (!api) return;
+    api.scrollToContent(api.getSceneElements(), {
+      fitToViewport: true,
+      animate,
+    });
   }, []);
+
+  const handleAPI = useCallback(
+    (api) => {
+      excalidrawAPI.current = api;
+      // Deferred a frame: calling this synchronously in the ref callback
+      // races with Excalidraw's own initialData scroll/zoom application and
+      // gets silently overwritten (same issue we hit with activeTool).
+      requestAnimationFrame(() => centerContent(false));
+    },
+    [centerContent],
+  );
 
   const toggleMode = useCallback(() => {
     setMode((m) => {
@@ -186,6 +202,21 @@ export default function App() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [toggleMode]);
+
+  // Re-fit whenever the embed container is resized (e.g. a responsive
+  // iframe), so the diagram stays centered instead of drifting off-frame.
+  useEffect(() => {
+    let raf = null;
+    const handler = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => centerContent(false));
+    };
+    window.addEventListener("resize", handler);
+    return () => {
+      window.removeEventListener("resize", handler);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [centerContent]);
 
   if (status === "loading")
     return (
