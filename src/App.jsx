@@ -2,15 +2,53 @@ import { useState, useEffect, useCallback, useRef, Component } from "react";
 import * as ExcalidrawAll from "@excalidraw/excalidraw";
 import MuiLinearProgress from "@mui/material/LinearProgress";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import Link from "@mui/material/Link";
 import "./App.css";
 
 const muiDarkTheme = createTheme({
   palette: { mode: "dark", primary: { main: "#c9c3ff" } },
 });
 
+const EMBEDIDRAW_REPO_URL = "https://github.com/leied/embedidraw";
+
+const CREDITS = [
+  {
+    name: "Excalidraw",
+    license: "MIT",
+    url: "https://github.com/excalidraw/excalidraw",
+  },
+  {
+    name: "Excalifont",
+    license: "MIT",
+    url: "https://github.com/excalidraw/excalidraw",
+  },
+  {
+    name: "Assistant typeface",
+    license: "SIL Open Font License 1.1",
+    url: "https://github.com/OmnibusType/Assistant",
+  },
+  {
+    name: "Cascadia Code",
+    license: "SIL Open Font License 1.1",
+    url: "https://github.com/microsoft/cascadia-code",
+  },
+  { name: "React", license: "MIT", url: "https://react.dev" },
+  { name: "MUI (Material UI)", license: "MIT", url: "https://mui.com" },
+  { name: "Emotion", license: "MIT", url: "https://emotion.sh" },
+];
+
 // CJS interop: the pre-bundle may expose named exports, a default, or both
 const _pkg = ExcalidrawAll?.default ?? ExcalidrawAll;
 const Excalidraw = _pkg?.Excalidraw ?? null;
+const MainMenu = _pkg?.MainMenu ?? null;
 
 // Font family IDs our pinned Excalidraw version (0.17.6) actually knows how
 // to render: 1=Virgil (served as Excalifont, see fonts/), 2=Helvetica,
@@ -122,6 +160,7 @@ function useFileParam() {
 export default function App() {
   const { status, data, error, url } = useFileParam();
   const [mode, setMode] = useState("interact"); // 'interact' | 'edit'
+  const [showCredits, setShowCredits] = useState(false);
   const excalidrawAPI = useRef(null);
 
   const handleAPI = useCallback((api) => {
@@ -200,32 +239,115 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="app-root">
-        <div className={`canvas-wrap ${mode}`}>
-          <Excalidraw
-            excalidrawAPI={handleAPI}
-            initialData={data}
-            theme="dark"
-            // Not using Excalidraw's built-in zen mode: it slides the zoom
-            // controls off-screen too, which we want to keep visible. The
-            // toolbar/hamburger are hidden explicitly via CSS instead.
-            zenModeEnabled={false}
-            viewModeEnabled={false}
-            UIOptions={{
-              canvasActions: {
-                saveToActiveFile: false,
-                loadScene: false,
-                export: false,
-                toggleTheme: false,
-              },
-              welcomeScreen: false,
-            }}
-          />
+      <ThemeProvider theme={muiDarkTheme}>
+        <div className="app-root">
+          <div className={`canvas-wrap ${mode}`}>
+            <Excalidraw
+              excalidrawAPI={handleAPI}
+              initialData={data}
+              theme="dark"
+              // Not using Excalidraw's built-in zen mode: it slides the zoom
+              // controls off-screen too, which we want to keep visible. The
+              // toolbar/hamburger are hidden explicitly via CSS instead.
+              zenModeEnabled={false}
+              viewModeEnabled={false}
+              UIOptions={{
+                canvasActions: {
+                  saveToActiveFile: false,
+                  loadScene: false,
+                  export: false,
+                  toggleTheme: false,
+                },
+                welcomeScreen: false,
+              }}
+            >
+              {MainMenu && (
+                <MainMenu>
+                  <MainMenu.Group title="Excalidraw">
+                    {/* SaveToActiveFile intentionally omitted: it requires a
+                        native file handle, which we never have since files
+                        load via fetch(), not the File System Access API — it
+                        would render but silently do nothing when clicked. */}
+                    <MainMenu.DefaultItems.LoadScene />
+                    <MainMenu.DefaultItems.Export />
+                    <MainMenu.DefaultItems.SaveAsImage />
+                    <MainMenu.DefaultItems.Help />
+                    <MainMenu.DefaultItems.ClearCanvas />
+                    <MainMenu.DefaultItems.ToggleTheme />
+                    <MainMenu.DefaultItems.ChangeCanvasBackground />
+                  </MainMenu.Group>
+                  {/* Excalidraw's own social links (MainMenu.DefaultItems.Socials),
+                      reproduced minus Twitter — that component bundles all three
+                      links as one unit with no way to omit just one. */}
+                  <MainMenu.Group title="Excalidraw links">
+                    <MainMenu.ItemLink
+                      href="https://github.com/excalidraw/excalidraw"
+                      icon={<GithubIcon />}
+                    >
+                      GitHub
+                    </MainMenu.ItemLink>
+                    <MainMenu.ItemLink
+                      href="https://discord.gg/UexuTaE"
+                      icon={<DiscordIcon />}
+                    >
+                      Discord
+                    </MainMenu.ItemLink>
+                  </MainMenu.Group>
+                  <MainMenu.Group title="Embedidraw links">
+                    <MainMenu.ItemLink
+                      href={EMBEDIDRAW_REPO_URL}
+                      icon={<GithubIcon />}
+                    >
+                      GitHub
+                    </MainMenu.ItemLink>
+                    <MainMenu.Item
+                      icon={<InfoIcon />}
+                      onSelect={() => setShowCredits(true)}
+                    >
+                      Credits
+                    </MainMenu.Item>
+                  </MainMenu.Group>
+                </MainMenu>
+              )}
+            </Excalidraw>
+          </div>
+
+          <ModeFab mode={mode} onToggle={toggleMode} />
         </div>
 
-        <ModeFab mode={mode} onToggle={toggleMode} />
-      </div>
+        <CreditsDialog
+          open={showCredits}
+          onClose={() => setShowCredits(false)}
+        />
+      </ThemeProvider>
     </ErrorBoundary>
+  );
+}
+
+function CreditsDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+      <DialogTitle>Credits</DialogTitle>
+      <DialogContent dividers>
+        <List dense disablePadding>
+          {CREDITS.map((c) => (
+            <ListItem key={c.name} disableGutters>
+              <ListItemText
+                primary={
+                  <Link href={c.url} target="_blank" rel="noreferrer">
+                    {c.name}
+                  </Link>
+                }
+                secondary={c.license}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -342,6 +464,41 @@ function EyeIcon() {
     >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function GithubIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+    </svg>
+  );
+}
+
+function DiscordIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.26a18.3 18.3 0 0 0-5.48 0 12.6 12.6 0 0 0-.62-1.26.08.08 0 0 0-.08-.04c-1.71.29-3.35.8-4.89 1.52a.07.07 0 0 0-.03.03C.86 8.5.13 12.5.48 16.44a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 6 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.89.08.08 0 0 1-.01-.13c.13-.09.25-.19.37-.28a.07.07 0 0 1 .08-.01c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08.01c.12.1.24.19.37.28a.08.08 0 0 1-.01.13c-.6.35-1.22.65-1.87.89a.08.08 0 0 0-.04.11c.36.7.78 1.37 1.23 2a.08.08 0 0 0 .08.03 19.85 19.85 0 0 0 6.01-3.03.08.08 0 0 0 .03-.06c.42-4.55-.7-8.51-2.96-12.04a.06.06 0 0 0-.03-.03ZM8.02 14.05c-1.18 0-2.16-1.08-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.16-1.08-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Z" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="11" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
   );
 }
